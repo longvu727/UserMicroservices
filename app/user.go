@@ -5,6 +5,7 @@ import "github.com/longvu727/FootballSquaresLibs/util/resources"
 type User interface {
 	GetDBUser(getUserParams GetUserParams, resources *resources.Resources) (*GetUserResponse, error)
 	CreateDBUser(createUserParams CreateUserParams, resources *resources.Resources) (*CreateUserResponse, error)
+	GetUserByGUID(getUserByGUIDParams GetUserByGUIDParams, resources *resources.Resources) (*GetUserResponse, error)
 }
 
 type UserApp struct{}

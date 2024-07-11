@@ -64,3 +64,18 @@ func (mr *MockUserMockRecorder) GetDBUser(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDBUser", reflect.TypeOf((*MockUser)(nil).GetDBUser), arg0, arg1)
 }
+
+// GetUserByGUID mocks base method.
+func (m *MockUser) GetUserByGUID(arg0 app.GetUserByGUIDParams, arg1 *resources.Resources) (*app.GetUserResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserByGUID", arg0, arg1)
+	ret0, _ := ret[0].(*app.GetUserResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserByGUID indicates an expected call of GetUserByGUID.
+func (mr *MockUserMockRecorder) GetUserByGUID(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByGUID", reflect.TypeOf((*MockUser)(nil).GetUserByGUID), arg0, arg1)
+}

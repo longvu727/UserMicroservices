@@ -84,6 +84,41 @@ func (suite *RoutesTestSuite) TestGetUser() {
 	suite.Equal(httpRecorder.Code, http.StatusOK)
 }
 
+func (suite *RoutesTestSuite) TestGetUserByGUID() {
+	testGuid := "f838b751-2553-46bc-a19a-cfb3bbac49a5"
+
+	url := "/GetUserByGUID"
+	ctrl := gomock.NewController(suite.T())
+
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer([]byte(`{"user_guid":"`+testGuid+`"}`)))
+	suite.NoError(err)
+
+	httpRecorder := httptest.NewRecorder()
+
+	returnUser := &app.GetUserResponse{}
+	returnUser.UserID = 10
+	returnUser.UserGUID = testGuid
+	returnUser.DeviceName = "AppleWebKit/5"
+	returnUser.UserName = "longvu"
+	returnUser.Alias = "lvu"
+
+	mockUser := mockuserapp.NewMockUser(ctrl)
+	mockUser.EXPECT().
+		GetUserByGUID(gomock.Any(), gomock.Any()).
+		Times(1).
+		Return(returnUser, nil)
+
+	routes := Routes{Apps: mockUser}
+	serveMux := routes.Register(nil)
+
+	handler, pattern := serveMux.Handler(req)
+	suite.Equal(http.MethodPost+" "+url, pattern)
+
+	handler.ServeHTTP(httpRecorder, req)
+
+	suite.Equal(httpRecorder.Code, http.StatusOK)
+}
+
 func (suite *RoutesTestSuite) TestHome() {
 
 	url := "/"

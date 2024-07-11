@@ -5,7 +5,7 @@ go 1.22.2
 require (
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.6.0
-	github.com/longvu727/FootballSquaresLibs v0.0.0-20240711024740-383f0903cb48
+	github.com/longvu727/FootballSquaresLibs v0.0.0-20240711174648-26a0833b8f71
 	github.com/stretchr/testify v1.9.0
 )
 

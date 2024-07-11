@@ -31,9 +31,10 @@ func (routes *Routes) Register(resources *resources.Resources) *http.ServeMux {
 	mux := http.NewServeMux()
 
 	routesHandlersMap := map[string]Handler{
-		"/":                              routes.home,
-		http.MethodPost + " /CreateUser": routes.createUser,
-		http.MethodPost + " /GetUser":    routes.getUser,
+		"/":                                 routes.home,
+		http.MethodPost + " /CreateUser":    routes.createUser,
+		http.MethodPost + " /GetUser":       routes.getUser,
+		http.MethodPost + " /GetUserByGUID": routes.getUserByGUID,
 	}
 
 	for route, handler := range routesHandlersMap {
@@ -79,6 +80,27 @@ func (routes *Routes) getUser(writer http.ResponseWriter, request *http.Request,
 	json.NewDecoder(request.Body).Decode(&getUserParams)
 
 	getUserResponse, err := routes.Apps.GetDBUser(getUserParams, resources)
+
+	if err != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		getUserResponse.ErrorMessage = `Unable to get user`
+		writer.Write(getUserResponse.ToJson())
+		return
+	}
+
+	writer.WriteHeader(http.StatusOK)
+	writer.Write(getUserResponse.ToJson())
+}
+
+func (routes *Routes) getUserByGUID(writer http.ResponseWriter, request *http.Request, resources *resources.Resources) {
+	log.Printf("Received request for %s\n", request.URL.Path)
+
+	writer.Header().Set("Content-Type", "application/json")
+
+	var getUserByGUIDParams app.GetUserByGUIDParams
+	json.NewDecoder(request.Body).Decode(&getUserByGUIDParams)
+
+	getUserResponse, err := routes.Apps.GetUserByGUID(getUserByGUIDParams, resources)
 
 	if err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
