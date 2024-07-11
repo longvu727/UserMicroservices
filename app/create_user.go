@@ -18,7 +18,7 @@ type CreateUserParams struct {
 }
 
 type CreateUserResponse struct {
-	UserID       int64  `json:"square_id"`
+	UserID       int64  `json:"user_id"`
 	UserGUID     string `json:"user_guid"`
 	ErrorMessage string `json:"error_message"`
 }
