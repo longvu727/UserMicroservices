@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -16,6 +17,10 @@ type CreateUserTestSuite struct {
 }
 
 func (suite *CreateUserTestSuite) SetupTest() {
+}
+
+func TestCreateUserTestSuite(t *testing.T) {
+	suite.Run(t, new(CreateUserTestSuite))
 }
 
 func (suite *CreateUserTestSuite) TestCreateUser() {
@@ -46,8 +51,35 @@ func (suite *CreateUserTestSuite) TestCreateUser() {
 	suite.NoError(err)
 
 	suite.Equal(randomUser.UserID, int32(user.UserID))
+
+	userResponseJson := user.ToJson()
+	suite.Greater(len(userResponseJson), 0)
 }
 
-func TestCreateUserTestSuite(t *testing.T) {
-	suite.Run(t, new(CreateUserTestSuite))
+func (suite *CreateUserTestSuite) TestCreateUserDBError() {
+	randomUser := randomUser()
+
+	ctrl := gomock.NewController(suite.T())
+	defer ctrl.Finish()
+
+	mockMySQL := mockdb.NewMockMySQL(ctrl)
+
+	mockMySQL.EXPECT().
+		CreateUser(gomock.Any(), gomock.Any()).
+		Times(1).
+		Return(int64(0), errors.New("test error"))
+
+	config, err := util.LoadConfig("../env", "app", "env")
+	suite.NoError(err)
+
+	resources := resources.NewResources(config, mockMySQL, context.Background())
+
+	createSquareParams := CreateUserParams{
+		IP:         randomUser.Ip.String,
+		DeviceName: randomUser.DeviceName.String,
+		UserName:   randomUser.UserName.String,
+		Alias:      randomUser.Alias.String,
+	}
+	_, err = NewUserApp().CreateDBUser(createSquareParams, resources)
+	suite.Error(err)
 }

@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"math/rand"
 	"testing"
 
@@ -19,7 +20,8 @@ type GetUserTestSuite struct {
 	suite.Suite
 }
 
-func (suite *GetUserTestSuite) SetupTest() {
+func TestGetUserTestSuite(t *testing.T) {
+	suite.Run(t, new(GetUserTestSuite))
 }
 
 func (suite *GetUserTestSuite) TestGetUser() {
@@ -51,6 +53,28 @@ func (suite *GetUserTestSuite) TestGetUser() {
 	suite.Equal(randomUser.UserName.String, user.UserName)
 	suite.Equal(randomUser.DeviceName.String, user.DeviceName)
 
+	userResponseJson := user.ToJson()
+	suite.Greater(len(userResponseJson), 0)
+}
+
+func (suite *GetUserTestSuite) TestGetUserDBError() {
+	ctrl := gomock.NewController(suite.T())
+	defer ctrl.Finish()
+
+	mockMySQL := mockdb.NewMockMySQL(ctrl)
+
+	mockMySQL.EXPECT().
+		GetUser(gomock.Any(), gomock.Any()).
+		Times(1).
+		Return(db.GetUserRow{}, errors.New("test error"))
+
+	config, err := util.LoadConfig("../env", "app", "env")
+	suite.NoError(err)
+
+	resources := resources.NewResources(config, mockMySQL, context.Background())
+
+	_, err = NewUserApp().GetDBUser(GetUserParams{UserID: 0}, resources)
+	suite.Error(err)
 }
 
 func (suite *GetUserTestSuite) TestGetUserByGUID() {
@@ -81,6 +105,30 @@ func (suite *GetUserTestSuite) TestGetUserByGUID() {
 	suite.Equal(randomUser.DeviceName.String, user.DeviceName)
 	suite.Equal(randomUser.UserName.String, user.UserName)
 	suite.Equal(randomUser.DeviceName.String, user.DeviceName)
+
+	userResponseJson := user.ToJson()
+	suite.Greater(len(userResponseJson), 0)
+}
+
+func (suite *GetUserTestSuite) TestGetUserByGUIDDBError() {
+	ctrl := gomock.NewController(suite.T())
+	defer ctrl.Finish()
+
+	mockMySQL := mockdb.NewMockMySQL(ctrl)
+
+	mockMySQL.EXPECT().
+		GetUserByGUID(gomock.Any(), gomock.Any()).
+		Times(1).
+		Return(db.GetUserByGUIDRow{}, errors.New("test error"))
+
+	config, err := util.LoadConfig("../env", "app", "env")
+	suite.NoError(err)
+
+	resources := resources.NewResources(config, mockMySQL, context.Background())
+
+	getUserParams := GetUserByGUIDParams{UserGUID: ""}
+	_, err = NewUserApp().GetUserByGUID(getUserParams, resources)
+	suite.Error(err)
 }
 
 func randomUser() db.GetUserRow {
@@ -103,8 +151,4 @@ func randomUserByGUID() db.GetUserByGUIDRow {
 		UserName:   sql.NullString{String: "", Valid: true},
 		Alias:      sql.NullString{String: "", Valid: true},
 	}
-}
-
-func TestGetUserTestSuite(t *testing.T) {
-	suite.Run(t, new(GetUserTestSuite))
 }
