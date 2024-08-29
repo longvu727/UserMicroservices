@@ -2,6 +2,7 @@ package routes
 
 import (
 	"bytes"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -15,6 +16,10 @@ import (
 
 type RoutesTestSuite struct {
 	suite.Suite
+}
+
+func TestRoutesTestSuite(t *testing.T) {
+	suite.Run(t, new(RoutesTestSuite))
 }
 
 func (suite *RoutesTestSuite) TestCreateUser() {
@@ -50,6 +55,43 @@ func (suite *RoutesTestSuite) TestCreateUser() {
 	suite.Equal(httpRecorder.Code, http.StatusOK)
 }
 
+func (suite *RoutesTestSuite) getTestError() error {
+	return errors.New("test error")
+}
+
+func (suite *RoutesTestSuite) TestCreateUserError() {
+
+	url := "/CreateUser"
+	ctrl := gomock.NewController(suite.T())
+
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer([]byte(`
+	{
+		"ip": "127.0.0.1",
+		"device_name": "AppleWebKit/5",
+		"user_name": "longvu",
+		"alias": "lvu"
+	}`)))
+	suite.NoError(err)
+
+	httpRecorder := httptest.NewRecorder()
+
+	mockUser := mockuserapp.NewMockUser(ctrl)
+	mockUser.EXPECT().
+		CreateDBUser(gomock.Any(), gomock.Any()).
+		Times(1).
+		Return(&app.CreateUserResponse{}, suite.getTestError())
+
+	routes := Routes{Apps: mockUser}
+	serveMux := routes.Register(nil)
+
+	handler, pattern := serveMux.Handler(req)
+	suite.Equal(http.MethodPost+" "+url, pattern)
+
+	handler.ServeHTTP(httpRecorder, req)
+
+	suite.Equal(httpRecorder.Code, http.StatusInternalServerError)
+}
+
 func (suite *RoutesTestSuite) TestGetUser() {
 
 	url := "/GetUser"
@@ -82,6 +124,33 @@ func (suite *RoutesTestSuite) TestGetUser() {
 	handler.ServeHTTP(httpRecorder, req)
 
 	suite.Equal(httpRecorder.Code, http.StatusOK)
+}
+
+func (suite *RoutesTestSuite) TestGetUserError() {
+
+	url := "/GetUser"
+	ctrl := gomock.NewController(suite.T())
+
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer([]byte(`{}`)))
+	suite.NoError(err)
+
+	httpRecorder := httptest.NewRecorder()
+
+	mockUser := mockuserapp.NewMockUser(ctrl)
+	mockUser.EXPECT().
+		GetDBUser(gomock.Any(), gomock.Any()).
+		Times(1).
+		Return(&app.GetUserResponse{}, suite.getTestError())
+
+	routes := Routes{Apps: mockUser}
+	serveMux := routes.Register(nil)
+
+	handler, pattern := serveMux.Handler(req)
+	suite.Equal(http.MethodPost+" "+url, pattern)
+
+	handler.ServeHTTP(httpRecorder, req)
+
+	suite.Equal(httpRecorder.Code, http.StatusInternalServerError)
 }
 
 func (suite *RoutesTestSuite) TestGetUserByGUID() {
@@ -119,6 +188,32 @@ func (suite *RoutesTestSuite) TestGetUserByGUID() {
 	suite.Equal(httpRecorder.Code, http.StatusOK)
 }
 
+func (suite *RoutesTestSuite) TestGetUserByGUIDError() {
+	url := "/GetUserByGUID"
+	ctrl := gomock.NewController(suite.T())
+
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer([]byte(`{}`)))
+	suite.NoError(err)
+
+	httpRecorder := httptest.NewRecorder()
+
+	mockUser := mockuserapp.NewMockUser(ctrl)
+	mockUser.EXPECT().
+		GetUserByGUID(gomock.Any(), gomock.Any()).
+		Times(1).
+		Return(&app.GetUserResponse{}, suite.getTestError())
+
+	routes := Routes{Apps: mockUser}
+	serveMux := routes.Register(nil)
+
+	handler, pattern := serveMux.Handler(req)
+	suite.Equal(http.MethodPost+" "+url, pattern)
+
+	handler.ServeHTTP(httpRecorder, req)
+
+	suite.Equal(httpRecorder.Code, http.StatusInternalServerError)
+}
+
 func (suite *RoutesTestSuite) TestHome() {
 
 	url := "/"
@@ -136,8 +231,4 @@ func (suite *RoutesTestSuite) TestHome() {
 	handler.ServeHTTP(httpRecorder, req)
 
 	suite.Equal(httpRecorder.Code, http.StatusOK)
-}
-
-func TestRoutesTestSuite(t *testing.T) {
-	suite.Run(t, new(RoutesTestSuite))
 }
