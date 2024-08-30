@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	db "github.com/longvu727/FootballSquaresLibs/DB/db"
 	mockdb "github.com/longvu727/FootballSquaresLibs/DB/db/mock"
+	"github.com/longvu727/FootballSquaresLibs/services"
 	"github.com/longvu727/FootballSquaresLibs/util"
 	"github.com/longvu727/FootballSquaresLibs/util/resources"
 	"github.com/stretchr/testify/suite"
@@ -40,7 +41,7 @@ func (suite *GetUserTestSuite) TestGetUser() {
 	config, err := util.LoadConfig("../env", "app", "env")
 	suite.NoError(err)
 
-	resources := resources.NewResources(config, mockMySQL, context.Background())
+	resources := resources.NewResources(config, mockMySQL, services.NewServices(), context.Background())
 
 	getUserParams := GetUserParams{UserID: int(randomUser.UserID)}
 	user, err := NewUserApp().GetDBUser(getUserParams, resources)
@@ -71,7 +72,7 @@ func (suite *GetUserTestSuite) TestGetUserDBError() {
 	config, err := util.LoadConfig("../env", "app", "env")
 	suite.NoError(err)
 
-	resources := resources.NewResources(config, mockMySQL, context.Background())
+	resources := resources.NewResources(config, mockMySQL, services.NewServices(), context.Background())
 
 	_, err = NewUserApp().GetDBUser(GetUserParams{UserID: 0}, resources)
 	suite.Error(err)
@@ -93,7 +94,7 @@ func (suite *GetUserTestSuite) TestGetUserByGUID() {
 	config, err := util.LoadConfig("../env", "app", "env")
 	suite.NoError(err)
 
-	resources := resources.NewResources(config, mockMySQL, context.Background())
+	resources := resources.NewResources(config, mockMySQL, services.NewServices(), context.Background())
 
 	getUserParams := GetUserByGUIDParams{UserGUID: randomUser.UserGuid}
 	user, err := NewUserApp().GetUserByGUID(getUserParams, resources)
@@ -124,7 +125,7 @@ func (suite *GetUserTestSuite) TestGetUserByGUIDDBError() {
 	config, err := util.LoadConfig("../env", "app", "env")
 	suite.NoError(err)
 
-	resources := resources.NewResources(config, mockMySQL, context.Background())
+	resources := resources.NewResources(config, mockMySQL, services.NewServices(), context.Background())
 
 	getUserParams := GetUserByGUIDParams{UserGUID: ""}
 	_, err = NewUserApp().GetUserByGUID(getUserParams, resources)

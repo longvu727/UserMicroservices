@@ -7,6 +7,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	mockdb "github.com/longvu727/FootballSquaresLibs/DB/db/mock"
+	"github.com/longvu727/FootballSquaresLibs/services"
 	"github.com/longvu727/FootballSquaresLibs/util"
 	"github.com/longvu727/FootballSquaresLibs/util/resources"
 	"github.com/stretchr/testify/suite"
@@ -39,7 +40,7 @@ func (suite *CreateUserTestSuite) TestCreateUser() {
 	config, err := util.LoadConfig("../env", "app", "env")
 	suite.NoError(err)
 
-	resources := resources.NewResources(config, mockMySQL, context.Background())
+	resources := resources.NewResources(config, mockMySQL, services.NewServices(), context.Background())
 
 	createSquareParams := CreateUserParams{
 		IP:         randomUser.Ip.String,
@@ -72,7 +73,7 @@ func (suite *CreateUserTestSuite) TestCreateUserDBError() {
 	config, err := util.LoadConfig("../env", "app", "env")
 	suite.NoError(err)
 
-	resources := resources.NewResources(config, mockMySQL, context.Background())
+	resources := resources.NewResources(config, mockMySQL, services.NewServices(), context.Background())
 
 	createSquareParams := CreateUserParams{
 		IP:         randomUser.Ip.String,

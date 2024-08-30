@@ -3,7 +3,7 @@ package app
 import (
 	"encoding/json"
 
-	usermicroservices "github.com/longvu727/FootballSquaresLibs/services/user_microservices"
+	"github.com/longvu727/FootballSquaresLibs/services"
 	"github.com/longvu727/FootballSquaresLibs/util/resources"
 )
 
@@ -16,7 +16,7 @@ type GetUserByGUIDParams struct {
 }
 
 type GetUserResponse struct {
-	usermicroservices.User
+	services.User
 	ErrorMessage string `json:"error_message"`
 }
 

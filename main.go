@@ -8,6 +8,7 @@ import (
 	"usermicroservices/routes"
 
 	"github.com/longvu727/FootballSquaresLibs/DB/db"
+	"github.com/longvu727/FootballSquaresLibs/services"
 	"github.com/longvu727/FootballSquaresLibs/util"
 	"github.com/longvu727/FootballSquaresLibs/util/resources"
 )
@@ -44,8 +45,9 @@ func getResourcesFromConfigFile(path string, configName string, configType strin
 		return nil, err
 	}
 
+	services := services.NewServices()
 	ctx := context.Background()
-	resources := resources.NewResources(config, mysql, ctx)
+	resources := resources.NewResources(config, mysql, services, ctx)
 
 	return resources, nil
 }

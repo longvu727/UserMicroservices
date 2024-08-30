@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	mockroutes "usermicroservices/routes/mock"
 	"testing"
+	mockroutes "usermicroservices/routes/mock"
 
 	"github.com/golang/mock/gomock"
+	"github.com/longvu727/FootballSquaresLibs/services"
 	"github.com/longvu727/FootballSquaresLibs/util"
 	"github.com/longvu727/FootballSquaresLibs/util/resources"
 	"github.com/stretchr/testify/suite"
@@ -21,7 +22,7 @@ func (suite *MainTestSuite) TestStart() {
 
 	config, err := util.LoadConfig("./env", "app", "env")
 	suite.NoError(err)
-	resources := resources.NewResources(config, nil, context.Background())
+	resources := resources.NewResources(config, nil, services.NewServices(), context.Background())
 
 	ctrl := gomock.NewController(suite.T())
 
