@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -62,7 +63,7 @@ func (routes *Routes) createUser(writer http.ResponseWriter, request *http.Reque
 
 	if err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
-		createUserResponse.ErrorMessage = `Unable to create user`
+		createUserResponse.ErrorMessage = `Unable to create user` + err.Error()
 		writer.Write(createUserResponse.ToJson())
 		return
 	}
@@ -81,9 +82,11 @@ func (routes *Routes) getUser(writer http.ResponseWriter, request *http.Request,
 
 	getUserResponse, err := routes.Apps.GetDBUser(getUserParams, resources)
 
-	if err != nil {
+	if err != nil && err == sql.ErrNoRows {
+		getUserResponse.ErrorMessage = `User not found`
+	} else if err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
-		getUserResponse.ErrorMessage = `Unable to get user`
+		getUserResponse.ErrorMessage = `Unable to get user` + err.Error()
 		writer.Write(getUserResponse.ToJson())
 		return
 	}
@@ -102,9 +105,11 @@ func (routes *Routes) getUserByGUID(writer http.ResponseWriter, request *http.Re
 
 	getUserResponse, err := routes.Apps.GetUserByGUID(getUserByGUIDParams, resources)
 
-	if err != nil {
+	if err != nil && err == sql.ErrNoRows {
+		getUserResponse.ErrorMessage = `User not found`
+	} else if err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
-		getUserResponse.ErrorMessage = `Unable to get user`
+		getUserResponse.ErrorMessage = `Unable to get user` + err.Error()
 		writer.Write(getUserResponse.ToJson())
 		return
 	}
